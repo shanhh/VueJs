@@ -42,7 +42,7 @@
 
     // 定义路由规则
     const routes = [
-        { path: '/', component: Home },
+        { path: '/', redirect: '/home' },
         { path: '/home', component: Home },
         { path: '/cart', component: Cart },
         { path: '/mine', component: Mine }
