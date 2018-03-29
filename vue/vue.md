@@ -62,7 +62,7 @@ v-on:click 写成@click 绑定事件
         	<li v-for="item in list" :key="item.id">
         </ul>
         <input :disable="canWrite" v-model="num">
-        <button @click="dealChirendEvent()">给父亲通信的事件</button>
+        <button @click="dealChilrenEvent()">我要调用儿子的事件</button>
         <Chidren
         	:fater="msg"
             :flag="flag"
@@ -88,9 +88,9 @@ v-on:click 写成@click 绑定事件
              list: []
           }  
         },
-      	creted () {
+      	created () {
           // 组件的生命周期可以 在这个里面发请求 页面加载好 数据也该回来了 等等一些不操作dom的预处理
-          // this.nextTick(() = {// 处理dom事件}
+          // this.nextTick(() = {// 处理dom事件})
       	},
       	mounted () {
           // 组件的生命周期 页面加载完毕 可以获取dom
@@ -113,7 +113,7 @@ v-on:click 写成@click 绑定事件
           }
       	},
         methods: {
-          dealChirendEvent () {
+          dealChilrenEvent () {
             this.$refs.children.toFather()
           },
           fatherReceviceData (data) {
@@ -169,16 +169,17 @@ v-on:click 写成@click 绑定事件
         list: [] //  请求得到的list
       }
     }
+    // 请求后的数据 不要先赋值给this.list  再去处理循环绑定flag 要先处理再绑定
     // 注意 所有页面中用到的数据 都要在这个里面有 要不数据即使改变 页面也不刷新
     // 局部用法
-    this.$set(this.object, 'msg', 'OK')
+    this.$set(this.data, 'msg', 'OK')
     // 全局用法
-    Vue.set(this.object, 'msg', 'OK')
+    Vue.set(this.data, 'msg', 'OK')
     // 这个时候的data 里面就添加了
 
 3.数据请求
 
-    // 我们容易网用的是vue-resourece 但是自从vue2以后 老尤不在更新了 开始维护axios
+    // 我们容易网用的是vue-resource 但是自从vue2以后 老尤不在更新了  推荐使用axios
     // 安装 npm install --save axios
     
     // 使用
@@ -211,7 +212,7 @@ vuex是状态管理的一种 应用场景常见页面的传值 有些不该用�
 
     // 安装 npm install --save vuex
     
-    // 我说的事自己用vue-cli构建的项目 容易网的项目架构 用的事函数的 一看就知道了 可自行下载
+    // 我说的是自己用vue-cli构建的项目 容易网的项目架构 用的是函数的 项目一看就知道了 可自行下载
     // 建立一个vuex文件夹 里面有个vue.js
     import Vue from 'vue'
     import Vuex from 'vuex'
@@ -232,7 +233,7 @@ vuex是状态管理的一种 应用场景常见页面的传值 有些不该用�
           state.step -= num
         }
         },
-       actions: { //异步的操作时间
+       actions: { //异步的操作事件
     
        }, 
         getters: { //这里的getters相当于就是实例中用到的计算属性
@@ -252,7 +253,7 @@ vuex是状态管理的一种 应用场景常见页面的传值 有些不该用�
     
     // 各个页面的使用
     // 操控mutations 
-    this.$store.commit('ADD_STEP', { num:1 , init: true })
+    this.$store.commit('ADD_STEP', {num:1 , init: true})
     // 得到state中的值
     const step =  this.$store.state.step
 
@@ -302,7 +303,17 @@ vuex是状态管理的一种 应用场景常见页面的传值 有些不该用�
 7.单项数据流
 
     // 数据流向props是单向的 子组件改变props 父组件的不会变 但是由于数组和对象是引用数据类型 这也会变 建议使用扩展运算符...
-    var arr = [...this.props.data]
+    props: {
+      list: {
+        type: Array,
+        required: true
+      }
+    }
+    data () {
+      return {
+        arr: [... this.list]
+      }
+    }
     // 有个数据太复杂可以类似于angular的angular.copy() 
     // 就要自己封装函数
     export default function deepCopy(result, source) {
@@ -366,3 +377,73 @@ vuex是状态管理的一种 应用场景常见页面的传值 有些不该用�
         // 可以访问组件实例 `this`
       }
     }
+
+10.vue中的eslink
+
+    https://github.com/standard/standard/blob/master/docs/RULES-en.md // 符合这个标准
+    // 代码刷新后  浏览器会报出 warning  浏览器中能看到
+    // 针对容易网架构
+    // 1. 在package.json中添加
+    	"eslint": "^3.19.0",
+        "eslint-config-standard": "^10.2.1",
+        "eslint-friendly-formatter": "^3.0.0",
+        "eslint-loader": "^1.7.1",
+        "eslint-plugin-html": "^3.0.0",
+        "eslint-plugin-import": "^2.7.0",
+        "eslint-plugin-node": "^5.2.0",
+        "eslint-plugin-promise": "^3.4.0",
+        "eslint-plugin-standard": "^3.0.1",
+        "babel-eslint": "^7.1.1"
+    // 2.在webpack.site.base.js 中添加
+        // 一个函数
+        function resolve (dir) {
+          return path.join(__dirname, '..', dir)
+        }
+    	// 在rules中添加
+    	{
+            test: /\.(js|vue)$/,
+            loader: 'eslint-loader',
+            enforce: 'pre',
+            include:[resolve('business')],
+            options: {
+              formatter: require('eslint-friendly-formatter'),
+              emitWarning: true
+            }
+        }
+    // 3 引入.eslintrc.js // 编辑还能检测的 推荐使用vscode 安装eslink插件 并全局安装 cnpm install -g eslint
+    // https://eslint.org/docs/user-guide/configuring
+    module.exports = {
+      root: true,
+      parser: 'babel-eslint',
+      parserOptions: {
+        sourceType: 'module'
+      },
+      env: {
+        browser: true,
+      },
+      // https://github.com/standard/standard/blob/master/docs/RULES-en.md
+      extends: 'standard',
+      // required to lint *.vue files
+      plugins: [
+        'html'
+      ],
+      // add your custom rules here
+      rules: {
+        // allow async-await
+        'generator-star-spacing': 'off',
+        // allow debugger during development
+        'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
+      }
+    }
+    // 4 引入.editorconfig //  安装EditorConfig插件 保证建立的文件一致
+    root = true
+    
+    [*]
+    charset = utf-8
+    indent_style = space
+    indent_size = 2
+    end_of_line = lf
+    insert_final_newline = true
+    trim_trailing_whitespace = true
+    // 5 引入.eslintignore
+     /build/
